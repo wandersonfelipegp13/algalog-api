@@ -2,26 +2,25 @@ package com.algaworks.algalog.api.controller;
 
 import java.util.List;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.algaworks.algalog.domain.model.Cliente;
+import com.algaworks.algalog.domain.repository.ClienteRepository;
 
+import lombok.AllArgsConstructor;
+
+@AllArgsConstructor
 @RestController
 @RequestMapping("clientes")
 public class ClienteController {
-
-	@PersistenceContext
-	private EntityManager entityManager;
+		
+	private ClienteRepository clienteRepository;
 	
 	@GetMapping
 	public List<Cliente> hello() {
-		return entityManager.createQuery("from Cliente", Cliente.class)
-				.getResultList();
+		return clienteRepository.findByNomeContaining("a");
 	}
 	
 }
