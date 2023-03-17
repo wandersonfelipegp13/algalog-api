@@ -11,7 +11,12 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import javax.validation.groups.ConvertGroup;
+import javax.validation.groups.Default;
 
+import com.algaworks.algalog.domain.ValidationGroups;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
@@ -25,27 +30,33 @@ import lombok.Setter;
 @Entity
 public class Entrega {
 
-    @EqualsAndHashCode.Include
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@EqualsAndHashCode.Include
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @ManyToOne
-    private Cliente cliente;
+	@Valid
+	@ConvertGroup(from = Default.class, to = ValidationGroups.ClienteId.class)
+	@NotNull
+	@ManyToOne
+	private Cliente cliente;
 
-    @Embedded
-    private Destinatario destinatario;
+	@Valid
+	@NotNull
+	@Embedded
+	private Destinatario destinatario;
 
-    private BigDecimal taxa;
+	@NotNull
+	private BigDecimal taxa;
 
-    @JsonProperty(access = Access.READ_ONLY)
-    @Enumerated(EnumType.STRING)
-    private StatusEntrega status;
+	@JsonProperty(access = Access.READ_ONLY)
+	@Enumerated(EnumType.STRING)
+	private StatusEntrega status;
 
-    @JsonProperty(access = Access.READ_ONLY)
-    private LocalDateTime dataPedido;
+	@JsonProperty(access = Access.READ_ONLY)
+	private LocalDateTime dataPedido;
 
-    @JsonProperty(access = Access.READ_ONLY)
-    private LocalDateTime dataFinalizacao;
+	@JsonProperty(access = Access.READ_ONLY)
+	private LocalDateTime dataFinalizacao;
 
 }
