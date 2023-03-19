@@ -45,6 +45,7 @@ public class ClienteController {
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	public Cliente adicionar(@Valid @RequestBody Cliente cliente) {
+		cliente.setId(null);
 		return catalogoClienteService.salvar(cliente);
 	}
 	
