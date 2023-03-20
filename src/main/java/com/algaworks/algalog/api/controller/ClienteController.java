@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.algaworks.algalog.api.assembler.ClienteAssembler;
+import com.algaworks.algalog.api.model.ClienteModel;
+import com.algaworks.algalog.api.model.input.ClienteInput;
 import com.algaworks.algalog.domain.model.Cliente;
 import com.algaworks.algalog.domain.repository.ClienteRepository;
 import com.algaworks.algalog.domain.service.CatalogoClienteService;
@@ -26,53 +29,65 @@ import lombok.AllArgsConstructor;
 @RestController
 @RequestMapping("clientes")
 public class ClienteController {
-		
+
 	private ClienteRepository clienteRepository;
 	private CatalogoClienteService catalogoClienteService;
-	
+	private ClienteAssembler clienteAssembler;
+
 	@GetMapping
-	public List<Cliente> listar() {
-		return clienteRepository.findAll();
+	public List<ClienteModel> listar() {
+		return clienteAssembler
+				.toCollectionModel(clienteRepository.findAll());
 	}
-	
+
 	@GetMapping("{clienteId}")
-	public ResponseEntity<Cliente> buscar(@PathVariable Long clienteId) {
+	public ResponseEntity<ClienteModel> buscar(@PathVariable Long clienteId) {
+		
 		return clienteRepository.findById(clienteId)
-				.map(ResponseEntity::ok)
+				.map(cliente -> ResponseEntity
+						.ok(clienteAssembler.toModel(cliente)))
 				.orElse(ResponseEntity.notFound().build());
+		
 	}
-	
+
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	public Cliente adicionar(@Valid @RequestBody Cliente cliente) {
-		cliente.setId(null);
-		return catalogoClienteService.salvar(cliente);
-	}
-	
-	@PutMapping("{clienteId}")
-	public ResponseEntity<Cliente> atualizar(@PathVariable Long clienteId, 
-			@Valid @RequestBody Cliente cliente) {
+	public ClienteModel adicionar(@Valid @RequestBody ClienteInput clienteInput) {
 		
+		Cliente novoCliente = clienteAssembler.toEntity(clienteInput);
+		
+		novoCliente = catalogoClienteService.salvar(novoCliente);
+		
+		return clienteAssembler.toModel(novoCliente);
+		 
+	}
+
+	@PutMapping("{clienteId}")
+	public ResponseEntity<ClienteModel> atualizar(@PathVariable Long clienteId, @Valid @RequestBody ClienteInput clienteInput) {
+
 		if (!clienteRepository.existsById(clienteId)) {
 			return ResponseEntity.notFound().build();
 		}
-		
+
+		Cliente cliente = clienteAssembler.toEntity(clienteInput);
 		cliente.setId(clienteId);
-		cliente = catalogoClienteService.salvar(cliente);
 		
-		return ResponseEntity.ok(cliente);
+		cliente = catalogoClienteService.salvar(cliente);
+
+		return ResponseEntity.ok(clienteAssembler.toModel(cliente));
+		
 	}
-	
+
 	@DeleteMapping("{clienteId}")
 	public ResponseEntity<Void> deletar(@PathVariable Long clienteId) {
-		
+
 		if (!clienteRepository.existsById(clienteId)) {
 			return ResponseEntity.notFound().build();
 		}
-		
+
 		catalogoClienteService.excluir(clienteId);
-		
+
 		return ResponseEntity.noContent().build();
 	}
-	
+
 }
